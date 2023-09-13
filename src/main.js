@@ -155,9 +155,6 @@ Vue.use(CascaderPanel);
 
 Vue.use(Loading.directive);
 
-
-// 
-// Vue.use(Message);
 Vue.prototype.$message = Message;
 
 Vue.config.productionTip = false

@@ -33,12 +33,15 @@
 			        const colCount = configItem.value[0];
 			        return Array(colCount).fill('');
 			      });
+				  
+				  console.log("初始化创建的数组：",initData)
 			
 			      return initData;
 			    },
 			handleKeyDown(keyIndex, colIndex, event) {
 				event.preventDefault();
 				if (event.key >= '0' && event.key <= '9') {
+					console.log("按下的是数字键")
 					this.inputData[keyIndex][colIndex - 1] = event.key;
 					console.log("this.inputData：", this.inputData[keyIndex][colIndex - 1])
 					// 如果按下的是数字键

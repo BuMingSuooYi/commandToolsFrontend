@@ -6,7 +6,7 @@
 					@addCommand="addCommand"></CustomCommands>
 			</el-tab-pane>
 			<el-tab-pane label="发送命令" name="second">
-			 <SendinCommands></SendinCommands>
+			 <SendinCommands :commandList="commandList"></SendinCommands>
 			</el-tab-pane>
 
 		</el-tabs>

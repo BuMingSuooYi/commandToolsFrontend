@@ -1,8 +1,8 @@
 /**
- * 账户管理api
+ * 管理api
  */
 import request from '@/unit/axios.js';
-// 账户基本路径
+// 基本路径
 const baseURL = '/command';
 
 /**
@@ -23,6 +23,17 @@ export const getAll = () => {
 export const getAllSysParameter = () => {
     return request({
         url: `${baseURL}/sysParameter`,
+        method: 'GET',
+    });
+};
+
+/**
+ * 获取一个命令并解析变量
+ * @returns {AxiosPromise} Axios请求
+ */
+export const findbyOne = (id) => {
+    return request({
+        url: baseURL+'/findbyOne/'+id,
         method: 'GET',
     });
 };
@@ -49,6 +60,19 @@ export const add = (params) => {
         url: `${baseURL}/createcommand`,
         method: 'POST',
         data: { ...params }
+    });
+};
+
+/**
+ * 预览命令
+ * @param params Command对象
+ * @returns {AxiosPromise} Axios请求
+ */
+export const call = (params) => {
+    return request({
+        url: `${baseURL}/callfunction`,
+        method: 'POST',
+		data: { ...params }
     });
 };
 

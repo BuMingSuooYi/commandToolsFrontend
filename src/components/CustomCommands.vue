@@ -29,9 +29,29 @@
 				<div>
 					<el-card class="box-card">
 						<el-form ref="form" label-width="80px">
-							<el-form-item label="命令名称">
-								<el-input v-model="commandData.name"></el-input>
-							</el-form-item>
+							<!-- <el-row gutter="20"> -->
+								<!-- <el-col :span=" 10"> -->
+									<el-form-item label="命令名称">
+										<el-input v-model="commandData.name"></el-input>
+									</el-form-item>
+								<!-- </el-col> -->
+								<!-- <el-col :span=" 10">
+									<el-select
+									    v-model="commandData.group"
+									    filterable
+									    allow-create
+									    default-first-option
+									    placeholder="选择命令分组">
+									    <el-option
+									      v-for="item in options"
+									      :key="item.value"
+									      :label="item.label"
+									      :value="item.value">
+									    </el-option>
+									  </el-select>
+								</el-col> -->
+							<!-- </el-row> -->
+							
 						</el-form>
 						<!-- 创建时间:xx-xx-xx
 						修改时间:xx-xx-xx -->
@@ -97,6 +117,8 @@
 				internalSelectedCommandId: this.selectedCommandId,
 				//鼠标移动时指向的命令id
 				pointToCommandId: null,
+				//命令的分组列表
+				commandGroups:[],
 				//当前的命令数据
 				commandData: {
 					name: "新命令",
@@ -105,6 +127,7 @@
 	"long":[4,"长度"],
 	"key":[2,"命令类型"]
 }`,
+					group:"默认",
 				},
 				//由上面parameter得到的参数列表
 				variableList: [],
@@ -135,7 +158,7 @@ array.push(two);
 				if (newValue != null) {
 					this.openCommand(newValue);
 				}
-			}
+			},
 		},
 		methods: {
 			//参数编辑器初始化配置
@@ -212,7 +235,9 @@ let array=[];`
 				let myCommand = this.myCommand;
 
 				let str3 = `return array;
-}`
+}
+
+editCommand(long, key, sysTime, nedNum, nodeNum, appNum);`
 
 				this.commandData.jsCode = str1 + variableStr + str2 + myCommand + str3;
 			},
@@ -226,6 +251,7 @@ let array=[];`
 	"long":[4,"长度"],
 	"key":[2,"命令类型"]
 }`,
+					group:"默认",
 				};
 				this.analysisCommand();
 
@@ -240,6 +266,7 @@ let array=[];`
 					parameter: command.parameter,
 				};
 				this.internalSelectedCommandId = id;
+				this.saveMyCommand();
 			},
 			//鼠标移动时指向命令高亮
 			highlightItem(id, shouldHighlight) {
