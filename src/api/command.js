@@ -89,18 +89,20 @@ export const call = (params) => {
 //     });
 // };
 
-// /**
-//  * 修改账户
-//  * @param params Account对象
-//  * @returns {AxiosPromise} Axios请求
-//  */
-// export const editAccount = (params) => {
-//     return request({
-//         url: `${baseURL}`,
-//         method: 'PUT',
-//         data: { ...params }
-//     });
-// };
+/**
+ * 修改命令
+ * @param params Account对象
+ * @returns {AxiosPromise} Axios请求
+ */
+export const updata = (params) => {
+    return request({
+        url: `${baseURL}`,
+        method: 'Patch',
+        data: { ...params }
+    });
+};
+
+
 // /**
 //  * 用户登录
 //  * @param params
@@ -124,3 +126,27 @@ export const call = (params) => {
 //         responseType: 'blob' // 设置响应类型为二进制数据
 //     });
 // };
+
+/**
+ * 倒叙查询全部命令历史
+ * @returns {AxiosPromise} Axios请求
+ */
+export const findSendingHistory = () => {
+    return request({
+        url: `${baseURL}/sendingHistory`,
+        method: 'GET',
+    });
+};
+
+/**
+ * 添加命令
+ * @param params Command对象
+ * @returns {AxiosPromise} Axios请求
+ */
+export const addSendingHistory = (params) => {
+    return request({
+        url: `${baseURL}/addSendingHistory`,
+        method: 'POST',
+        data: { ...params }
+    });
+};

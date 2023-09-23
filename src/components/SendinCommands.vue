@@ -4,12 +4,12 @@
 			<el-aside width="200px">
 				<p>网络</p>
 				<div class="list">
-					<div v-for="net in netList" @click="openNet(net.id)" @mouseenter="highlightNet(net.id, true)"
-						@mouseleave="highlightNet(net.id, false)"
-						:class="{ 'selectlighted': net.id == selectedNetId ,'pointTolighted':net.id ==pointToNetId }">
+					<div v-for="net in netList" @click="openNet(net.netId)" @mouseenter="highlightNet(net.netId, true)"
+						@mouseleave="highlightNet(net.netId, false)"
+						:class="{ 'selectlighted': net.netId == selectedNetId ,'pointTolighted':net.netId ==pointToNetId }">
 						<el-row>
 							<el-col :span=" 24">
-								<div class="grid-content bg-purple">{{ net.name }}</div>
+								<div class="grid-content bg-purple">网络：{{ net.netId }}</div>
 							</el-col>
 						</el-row>
 					</div>
@@ -18,12 +18,12 @@
 			<el-aside width="200px">
 				<p>节点</p>
 				<div class="list">
-					<div v-for="node in nodeList" @click="openNode(node.id)" @mouseenter="highlightNode(node.id, true)"
-						@mouseleave="highlightNode(node.id, false)"
-						:class="{ 'selectlighted': node.id == selectedNodeId ,'pointTolighted':node.id ==pointToNodeId }">
+					<div v-for="node in nodeList" @click="openNode(node)" @mouseenter="highlightNode(node.nodeId, true)"
+						@mouseleave="highlightNode(node.nodeId, false)"
+						:class="{ 'selectlighted': node.nodeId == selectedNodeId ,'pointTolighted':node.nodeId ==pointToNodeId }">
 						<el-row>
 							<el-col :span="24">
-								<div class="grid-content bg-purple">{{ node.name }}</div>
+								<div class="grid-content bg-purple">节点：{{ node.nodeId }}</div>
 							</el-col>
 						</el-row>
 					</div>
@@ -34,14 +34,7 @@
 			<el-aside width="90%">
 				<div style="margin-top: 20px">
 					<el-radio-group v-model="appRadio" size="medium">
-						<el-radio-button label=1></el-radio-button>
-						<el-radio-button label=2></el-radio-button>
-						<el-radio-button label=3></el-radio-button>
-						<el-radio-button label=4></el-radio-button>
-						<el-radio-button label=5></el-radio-button>
-						<el-radio-button label=6></el-radio-button>
-						<el-radio-button label=7></el-radio-button>
-						<el-radio-button label=8></el-radio-button>
+						<el-radio-button v-for="app in 8" :label="app"></el-radio-button>
 					</el-radio-group>
 				</div>
 				<div>
@@ -68,7 +61,8 @@
 							<div class="grid-content bg-purple">
 								<div class="scrollable-list-container my_input">
 									<div class="scrollable-list">
-										<InputGrid :inputConfig="commandData.parameterList" />
+										<InputGrid :inputConfig="commandData.parameterList"
+											@inputData="calculatinputData" />
 									</div>
 								</div>
 							</div>
@@ -93,26 +87,95 @@
 
 				<div>
 					<el-button @click="callCommand" style="width: 300px;">预览命令</el-button>
-
-					<el-dialog title="预览命令" :visible.sync="dialogTableVisible">
-					{{this.commandResult}}
-					</el-dialog>
 				</div>
 
 			</el-aside>
 		</el-container>
+
+		<div>
+			<el-dialog width="80%" title="预览命令" :visible.sync="dialogTableVisible">
+				<el-row>
+					<el-col :span="12">
+						<pre class="my_request">
+{
+	"header": {
+		"payloadType": "HfReadWriteRequest",
+		"payloadVersion": 1,
+		"subscribe": false,
+		"netId": <span class="my_alterable">{{this.selectedNetId}}</span>      //node的netId
+	},
+	"payload": {
+		"nodeId": <span class="my_alterable">{{this.selectedNodeId}}</span>,   //node的nodeId
+		"srcEndpoint": 8, //固定为8
+		"shortAddr": <span class="my_alterable">{{this.body.payload.shortAddr}}</span>,//node的shortAddr
+		"addrType": 2,    //固定值
+		
+		"dstEndpoint": <span class="my_alterable">{{this.appRadio}}</span>, //用户选择的endpoint，整数
+		"clusterId": 17,  //固定值
+		"cmd": 2,         //固定值
+		"spe": 0,         //固定值
+		"dir": 0,         //固定值
+		"disrsp": 0,      //固定值
+		"mcd": 0,         //固定值
+		"seq": 0          //固定值
+	},
+	"extraPayload": {
+		"attributeId": 4,     //固定值
+		"attributeType": 67,  //固定值
+		
+		"attributeValue":     //一维data数组
+		[
+		<div class="column-container">
+		    <div class="my_alterable" v-for="(item, index) in commandResult" :key="index">
+		      {{item}},
+		    </div>
+		</div>
+		]
+	}
+}
+						</pre>
+
+					</el-col>
+					<el-col :span="12">
+						<div>
+							<ul>
+								<li v-for="(value, key) in this.requestCommandResult" :key="key">
+									<strong>{{ key }}:</strong>
+									{{ typeof value === 'object' ? formatObject(value) : value }}
+								</li>
+							</ul>
+						</div>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="6" :offset="8">
+						<el-button @click="sendCommand" style="width: 300px;">发送命令</el-button>
+					</el-col>
+				</el-row>
+
+			</el-dialog>
+		</div>
 	</div>
 </template>
 
 <script>
+	import axios from 'axios';
+
 	import InputGrid from './InputGrid.vue';
 	import {
 		findbyOne,
-		call
+		call,
+		addSendingHistory
 	} from '../api/command.js';
+	import {
+		getAllNet,
+		findNodeByNet
+	} from '../api/linking.js';
 	import {
 		forEach
 	} from 'core-js/es6/array';
+
+
 	export default {
 		components: {
 			InputGrid,
@@ -123,60 +186,95 @@
 				required: true,
 			}
 		},
+
 		data() {
 			return {
-				netList: [{
-						id: 1,
-						name: "网络1",
-						value: 1
-					},
-					{
-						id: 2,
-						name: "网络2",
-						value: 2
-					},
-					{
-						id: 3,
-						name: "网络3",
-						value: 3
-					},
-				],
+				netList: [],
 				selectedNetId: null,
 				pointToNetId: null,
-				nodeList: [{
-						id: 1,
-						name: "节点1",
-						value: 1
-					},
-					{
-						id: 2,
-						name: "节点2",
-						value: 2
-					},
-					{
-						id: 3,
-						name: "节点3",
-						value: 3
-					},
-				],
+				nodeList: [],
 				selectedNodeId: null,
 				pointToNodeId: null,
 				appRadio: 0,
 				selectedCommand: null,
-				//选中的命令数据
+				//选中命令解析的数据,通过API获取和本地计算得到
 				commandData: {
 					sysParameters: [],
 					parameterList: [],
 				},
+				//输入的自变量数据
+				inputData: {
+
+				},
 				//命令预览弹窗
 				dialogTableVisible: false,
-				commandResult:"",
+				commandResult: "",
+				requestCommandResult: {
+
+				},
+				headers: {
+					"Content-Type": 'application/json',
+					"x-access-token": 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHBpcmVUaW1lIjoxNjk1NDU5NDg0MDc2LCJ1c2VybmFtZSI6IjEzMTc3ODEyODkxIiwiblVzZXJJZCI6MTd9.jfd4Ssw3tbFKYS9SLu4vrOEfbUxUtmiH6uV9LyDsJ7M' // 替换成你的访问令牌
+				},
+				body: {
+					header: {
+						payloadType: "HfReadWriteRequest",
+						payloadVersion: 1,
+						subscribe: false,
+						netId: null
+					},
+					payload: {
+						nodeId: null,
+						srcEndpoint: 8,
+						shortAddr: null,
+						addrType: 2,
+						dstEndpoint: null,
+						clusterId: 17,
+						cmd: 2,
+						spe: 0,
+						dir: 0,
+						disrsp: 0,
+						mcd: 0,
+						seq: 0
+					},
+					extraPayload: {
+						attributeId: 4,
+						attributeType: 67,
+						attributeValue: null
+					}
+				},
 
 			}
 		},
 		//钩子函数，加载数据
-		created() {
-			console.log(this.commandList)
+		async created() {
+			 // 获取网络号
+			  try {
+			    const netList = await getAllNet();
+			    this.netList = netList;
+			  } catch (err) {
+			    this.$message.error('请求出错了：' + err);
+			  }
+			
+			  // 开始时获取最新密钥
+			  const loginUrl = 'https://rest-t.huafeiiot.com/login';
+			  const requestData = {
+			    phone: '13177812891',
+			    password: '123qwe!@#QWE'
+			  };
+			
+			  try {
+			    const response = await axios.post(loginUrl, requestData);
+			    console.log(response.data);
+			    console.log('this：', this);
+			    this.headers = {
+			      'Content-Type': 'application/json',
+			      'x-access-token': response.data.access_token
+			    };
+			  } catch (error) {
+			    console.error(error);
+			  }
+
 
 		},
 		//计算属性
@@ -201,6 +299,13 @@
 			//点击选择网络
 			openNet(id) {
 				this.selectedNetId = id;
+				findNodeByNet(id).then(res => {
+					this.nodeList = res;
+					console.log("得到的nodeList：", res)
+				}).catch(err => {
+					this.$message.error('请求出错了：' + err);
+				});
+
 			},
 			//鼠标移动时指向节点高亮
 			highlightNode(id, shouldHighlight) {
@@ -212,8 +317,9 @@
 				}
 			},
 			//点击选择节点
-			openNode(id) {
-				this.selectedNodeId = id;
+			openNode(node) {
+				this.selectedNodeId = node.nodeId;
+				this.body.payload.shortAddr = node.shortAddr;
 			},
 			//选择命令，获取命令数据
 			selectCommandChange(id) {
@@ -242,36 +348,109 @@
 					this.$message.error('请求出错了：' + err);
 				});
 			},
+			calculatinputData(data) {
+				// 在父组件中监听到子组件的自定义事件后，执行的方法
+				console.log('从子组件接收到的数据：', data);
+				this.inputData = data; // 更新父组件的数据
+			},
+			//解析命令
 			callCommand() {
-				console.log("进入测试")
-				this.dialogTableVisible=true;
-				let array=[];
-				//请在**之间编写你的命令规则
-				let one=['h','e','l','l','o'];
-				let two=['w','o','r','l','d'];
-				array.push(one);
-				array.push(two);
-				array.push(3);
-				console.log("array:",array);
-				
+				this.requestCommandResult = {};
+				this.dialogTableVisible = true;
+
+				let prm = {};
+
+				//准备系统参数
+				for (let one of this.commandData.sysParameters) {
+					prm[one.name] = one.value;
+				}
+				//准备自定义参数
+				let i = 0;
+				for (let one of this.commandData.parameterList) {
+					prm[one.name] = this.inputData[i];
+					i++
+				}
+				this.body.header.netId = this.selectedNetId;
+				this.body.payload.nodeId = this.selectedNodeId;
+				this.body.payload.dstEndpoint = this.appRadio;
+				this.body.extraPayload.attributeValue = prm;
+
+				//解析命令的参数
 				let test = {
 					id: this.selectedCommand,
-					prm: {
-						long: 10,
-						key: 20,
-						message: 'Hello, World!',
-						sysTime: new Date().toLocaleString(),
-						nedNum: this.selectedNetId,
-						nodeNum: this.selectedNodeId,
-						appNum: Number(this.appRadio) ,
-					},
+					prm: prm
 				};
 				call(test).then(res => {
-					console.log("测试命令123：", res);
-					this.commandResult=res;
+					this.commandResult = res;
 				}).catch(err => {
 					this.$message.error('请求出错了：' + err);
 				});
+			},
+			//更新令牌
+
+			//发送命令
+			//78号测试网络
+			async sendCommand() {
+				const url = "https://rest-t.huafeiiot.com/api/execute";
+				const command = this.commandList.find(obj => obj.id === this.selectedCommand);
+				let history = {
+					name: command.name,
+					state: -1,
+					message: ""
+				}
+				//发送命令
+				await axios.post(url, this.body, {
+						"headers": this.headers
+					})
+					.then((response) => {
+						this.requestCommandResult = response;
+						console.log('成功:', response.data);
+						history.state = response.status;
+						history.message = response.message;
+					})
+					.catch((error) => {
+						this.requestCommandResult = error;
+						history.state = 401;
+						history.message = error;
+						//tockn过期重新请求tocken
+						const options = {
+							method: 'POST',
+							url: 'https://rest-t.huafeiiot.com/login',
+							headers: {
+								'Content-Type': 'application/json',
+								'content-type': 'application/json'
+							},
+							data: {
+								phone: '13177812891',
+								password: '123qwe!@#QWE'
+							}
+						};
+						axios.request(options).then(function(response) {
+							console.log(response.data);
+							this.headers = {
+								"Content-Type": 'application/json',
+								"x-access-token": response.data.access_token
+							}
+						}).catch(function(error) {
+							console.error(error);
+						}).bind(this);
+						console.error('失败:', error);
+					});
+
+				//添加一条命令历史
+				console.log("history:",history)
+				if (history.message==undefined){
+					history.message="";
+				}
+				addSendingHistory(history).then(res => {
+					console.log("添加命令历史：", res)
+				}).catch(err => {
+					this.$message.error('请求出错了：' + err);
+				});
+			},
+			formatObject(obj) {
+				// 辅助方法，用于格式化嵌套对象
+				return JSON.stringify(obj, null, 2);
 			}
 		},
 	}
@@ -360,5 +539,30 @@
 		/* 外边框的样式，可以根据需要自定义颜色和宽度 */
 		padding: 5px;
 		margin-top: 20px;
+	}
+
+	/* 显示请求数据的样式 */
+
+	.my_request {
+		white-space: pre;
+		text-align: left;
+	}
+
+	.column-container {
+		width: 40%;
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	.my_alterable {
+		height: 20px;
+		width: calc(5%);
+		/* 每列占据1/6的宽度，-10px是为了添加间距 */
+		margin: 2px;
+		/* 列之间的间距 */
+		/* box-sizing: border-box; */
+
+		font-weight: bold;
+		color: brown;
 	}
 </style>

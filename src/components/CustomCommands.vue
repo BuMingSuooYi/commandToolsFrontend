@@ -30,12 +30,12 @@
 					<el-card class="box-card">
 						<el-form ref="form" label-width="80px">
 							<!-- <el-row gutter="20"> -->
-								<!-- <el-col :span=" 10"> -->
-									<el-form-item label="命令名称">
-										<el-input v-model="commandData.name"></el-input>
-									</el-form-item>
-								<!-- </el-col> -->
-								<!-- <el-col :span=" 10">
+							<!-- <el-col :span=" 10"> -->
+							<el-form-item label="命令名称">
+								<el-input v-model="commandData.name"></el-input>
+							</el-form-item>
+							<!-- </el-col> -->
+							<!-- <el-col :span=" 10">
 									<el-select
 									    v-model="commandData.group"
 									    filterable
@@ -51,7 +51,7 @@
 									  </el-select>
 								</el-col> -->
 							<!-- </el-row> -->
-							
+
 						</el-form>
 						<!-- 创建时间:xx-xx-xx
 						修改时间:xx-xx-xx -->
@@ -68,7 +68,7 @@
 						lang="javascript" width="100%" height="200px">
 					</editor>
 				</div>
-				<el-button v-if="commandData.id" @click="saveCommand">保存修改</el-button>
+				<el-button v-if="commandData.id" @click="updataCommand">保存修改</el-button>
 				<el-button v-else type="primary" @click="addCommand">添加新命令</el-button>
 
 			</el-aside>
@@ -77,7 +77,9 @@
 			<el-aside width="36%" id="parameterRegion">
 				<div class="scrollable-list-container">
 					<ul class="scrollable-list">
-						<li v-for="sysParameter in sysList" :key="sysParameter.id">{{sysParameter.name}}（{{ sysParameter.remark}}）</li>
+						<li v-for="sys in sysList" :key="sys.id">
+							{{sys.name}}（{{ sys.remark}}）
+						</li>
 					</ul>
 				</div>
 
@@ -106,19 +108,21 @@
 				type: Number,
 				value: null,
 			},
-			sysList:{
+			sysList: {
 				type: Array,
 				value: [],
 			}
 		},
 		data() {
 			return {
+				//命令搜索框
 				input: '',
-				internalSelectedCommandId: this.selectedCommandId,
+				//选择的命令id
+				internalSelectedCommandId: null,
 				//鼠标移动时指向的命令id
 				pointToCommandId: null,
 				//命令的分组列表
-				commandGroups:[],
+				commandGroups: [],
 				//当前的命令数据
 				commandData: {
 					name: "新命令",
@@ -127,34 +131,30 @@
 	"long":[4,"长度"],
 	"key":[2,"命令类型"]
 }`,
-					group:"默认",
+					sysParameter: "",
+					group: "默认",
 				},
-				//由上面parameter得到的参数列表
+				//由上面parameter得到的自定义参数列表
 				variableList: [],
+				sysParameterList: [],
 				variableF: true,
 				//保存自定义编写的命令
 				myCommand: `
 					
 //请在**之间编写你的命令规则
-let one=['h','e','l','l','o'];
-let two=['w','o','r','l','d'];
-array.push(one);
-array.push(two);
+array.push(long);
+array.push(key);
 
 `,
 
 			};
 		},
-		//钩子函数，加载数据
-		created() {
-			if (this.selectedCommandId != null) {
-				this.openCommand(this.selectedCommandId);
-			}
-		},
+
 		//监控属性
 		watch: {
 			selectedCommandId(newValue, oldValue) {
-				internalSelectedCommandId: newValue;
+				console.log("监控发生变化，", newValue, oldValue);
+				// tihs.internalSelectedCommandId=newValue;
 				if (newValue != null) {
 					this.openCommand(newValue);
 				}
@@ -178,19 +178,45 @@ array.push(two);
 			},
 			//参数变化时调用的函数
 			parameterChange: function() {
-				//解析参数,整理返回得到参数列表
-				this.analysisParameter();
-				//参数发送改变时，将命令中的参数替换
+				//解析自定义参数,整理返回得到自定义参数列表
+				this.analyvariableParameter();
+				////参数发送改变时，将命令中的参数替换
 				this.analysisCommand();
 			},
 
-			//解析参数,整理返回得到参数列表
+			//解析系统参数,整理返回得到参数列表
 			analysisParameter: function() {
-				// 解析变量
+				//解析系统参数
+				console.log("系统参数列表：", this.sysList)
+				//系统参数的名字数组
+				let namesArray = this.sysList.map((sysParam) => sysParam.name);
+				const regex = new RegExp(`\\b(${namesArray.join('|')})\\b`, 'g');
+				// // 创建正则表达式，匹配 namesArray 中的任何名称，但只匹配一次
+				// const regex = new RegExp(`\\b(${namesArray.join('|')})\\b(?!.*\\b\\1\\b)`, 'g');
+				let matches = this.myCommand.match(regex) || [];
+
+
+
+				// 使用 Set 来去重
+				matches = [...new Set(matches)];
+				if (matches.length == 1 && matches[0] == '') {
+					this.sysParameterList = [];
+				} else {
+					this.sysParameterList = matches;
+				}
+
+				console.log("系统参数名称列表：", this.sysParameterList)
+
+				this.analysisCommand();
+			},
+
+			//解析自定义参数，得到自定义参数列表
+			analyvariableParameter() {
+				// 解析自定义变量
 				try {
 					this.variableList = JSON.parse(this.commandData.parameter);
 					this.variableF = true;
-					console.log(this.variableList);
+					console.log("自定义变量列表：", this.variableList);
 				} catch (error) {
 					this.variableF = false;
 					console.log('变量，JSON格式错误：');
@@ -204,27 +230,31 @@ array.push(two);
 
 				if (matches) {
 					this.myCommand = matches[1];
-					console.log("matches[1]：",matches[1]);
-					console.log("命令：",this.myCommand);
+					console.log("命令：", this.myCommand);
+					this.analysisParameter()
 				} else {
-// 					this.myCommand = `
-					
-// //从这里开始编写你的命令规则
-// let one=['h','e','l','l','o'];
-// let two=['w','o','r','l','d'];
-// array.push(one);
-// array.push(two);
+					// 					this.myCommand = `
 
-// `;
+					// //从这里开始编写你的命令规则
+					// let one=['h','e','l','l','o'];
+					// let two=['w','o','r','l','d'];
+					// array.push(one);
+					// array.push(two);
+
+					// `;
 				}
 			},
-			//参数发送改变时，将命令中的参数替换
+			//参数发生改变时，将命令中的参数替换
 			analysisCommand: function() {
 				let str1 = `function editCommand(`;
 				// 变量列表
 				let variableStr = "";
-				for (var key in this.variableList) {
+				for (let key in this.variableList) {
 					variableStr = variableStr + key + ',';
+				}
+				for (let key of this.sysParameterList) {
+					console.log("长度:", this.sysParameterList.length)
+					variableStr = variableStr + key+ ',';
 				}
 				// 移除最后一个逗号
 				variableStr = variableStr.slice(0, -1);
@@ -237,9 +267,10 @@ let array=[];`
 				let str3 = `return array;
 }
 
-editCommand(long, key, sysTime, nedNum, nodeNum, appNum);`
+editCommand(`
+				let str4 = variableStr + ");";
 
-				this.commandData.jsCode = str1 + variableStr + str2 + myCommand + str3;
+				this.commandData.jsCode = str1 + variableStr + str2 + myCommand + str3 + str4;
 			},
 			//添加命令初始化
 			addCommandInit() {
@@ -251,9 +282,23 @@ editCommand(long, key, sysTime, nedNum, nodeNum, appNum);`
 	"long":[4,"长度"],
 	"key":[2,"命令类型"]
 }`,
-					group:"默认",
+					sysParameter: "",
+					group: "默认",
 				};
-				this.analysisCommand();
+
+				this.variableList = [],
+					this.sysParameterList = [],
+					this.variableF = true,
+					//保存自定义编写的命令
+					this.myCommand = `
+									
+//请在**之间编写你的命令规则
+array.push(long);
+array.push(key);
+
+`,
+				this.analyvariableParameter()
+				this.analysisParameter();
 
 			},
 			//打开命令
@@ -267,6 +312,7 @@ editCommand(long, key, sysTime, nedNum, nodeNum, appNum);`
 				};
 				this.internalSelectedCommandId = id;
 				this.saveMyCommand();
+				this.analysisParameter();
 			},
 			//鼠标移动时指向命令高亮
 			highlightItem(id, shouldHighlight) {
@@ -281,17 +327,22 @@ editCommand(long, key, sysTime, nedNum, nodeNum, appNum);`
 			addCommand() {
 				console.log("点击添加")
 				if (this.variableF) {
-					let a = this.$emit('addCommand', this.commandData);
-					console.log("aaaaa:", a)
+					//将系统变量列表转化为字符串
+					this.commandData.sysParameter=JSON.stringify(this.sysParameterList)
+					this.$emit('addCommand', this.commandData);
 				} else {
 					this.$message({
 						message: '变量格式错误，请采用json格式',
 						type: 'warning'
 					});
 				}
-
-
 			},
+			//传递给父组件的修改命令
+			updataCommand(){
+				console.log("一")
+				this.$emit('updataCommand',this.commandData);
+			},
+			
 			//传递给父组件的保存命令
 			saveCommand() {
 
