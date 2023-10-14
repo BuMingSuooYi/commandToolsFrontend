@@ -47,7 +47,7 @@
 		</el-row>
 
 		<div>
-			<el-dialog width="80%" title="预览命令" :visible.sync="dialogTableVisible">
+			<el-dialog width="80%" title="预览命令" :visible.sync="dialogTableVisible" >
 				<el-row>
 					<el-col :span="12">
 						<pre class="my_request">
@@ -103,7 +103,7 @@
 				</el-row>
 				<el-row>
 					<el-col :span="6" :offset="8">
-						<el-button @click="sendCommand" style="width: 300px;">发送命令</el-button>
+						<el-button @click="sendCommand" style="width: 300px;" v-if="jsF">发送命令</el-button>
 					</el-col>
 				</el-row>
 
@@ -123,7 +123,8 @@
 	import {
 		findByName,
 		findbyOne,
-		call
+		call,
+		addSendingHistory
 	} from '../api/command.js'
 
 	export default {
@@ -178,16 +179,19 @@
 					parList: undefined,
 					sysList: undefined,
 				},
-				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!键值对 对象
 				//解析完需要发送的参数
 				sendPar: {
 					parList: {},
 					sysList: {}
 				},
+				// 发送命令时携带的
+				par:{},
 				// 预览命令弹窗
 				dialogTableVisible: false,
 				// 运行命令得到的参数
 				commandPar: [],
+				// js代码错误标志!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				jsF:true,
 				// 发送命令之后的结果
 				requestResult: {},
 				//发送命令时需要的请求头
@@ -265,6 +269,8 @@
 			},
 			//预览命令参数
 			async callCommand() {
+				this.jsF=true;
+				this.par={}
 				this.requestResult = {};
 				this.dialogTableVisible = true;
 
@@ -286,9 +292,13 @@
 					id: this.commandId,
 					prm: prm
 				};
-				call(test).then(res => {
+				this.par=prm;
+				await call(test).then(res => {
 					this.commandPar = res;
 				}).catch(err => {
+					this.jsF=false;
+					this.commandPar=['命令代码有误，请先debug'];
+					console.log("jsF：",this.jsF);
 					this.$message.error('请求出错了：' + err);
 				});
 
@@ -316,9 +326,9 @@
 				const url = "https://rest-t.huafeiiot.com/api/execute";
 				const command = this.searchCommandList.find(obj => obj.id === this.commandId);
 				let history = {
-					name: command.name,
+					commandId: command.id,
 					state: -1,
-					message: ""
+					par:''
 				}
 				//发送命令
 				await axios.post(url, this.body, {
@@ -328,12 +338,10 @@
 						this.requestResult = response;
 						console.log('成功:', response.data);
 						history.state = response.status;
-						history.message = response.message;
+						history.par=JSON.stringify(this.par);
 					})
 					.catch((error) => {
 						this.requestResult = error;
-						history.state = 401;
-						history.message = error;
 						//tockn过期重新请求tocken
 						const options = {
 							method: 'POST',
@@ -359,16 +367,13 @@
 						console.error('失败:', error);
 					});
 
-				//添加一条命令历史
-				// console.log("history:",history)
-				// if (history.message==undefined){
-				// 	history.message="";
-				// }
-				// addSendingHistory(history).then(res => {
-				// 	console.log("添加命令历史：", res)
-				// }).catch(err => {
-				// 	this.$message.error('请求出错了：' + err);
-				// });
+				// 添加一条命令历史
+				console.log("history:",history)
+				addSendingHistory(history).then(res => {
+					console.log("添加命令历史：", res)
+				}).catch(err => {
+					// this.$message.error('请求出错了：' + err);
+				});
 			},
 
 			formatObject(obj) {
@@ -382,7 +387,7 @@
 <style>
 	.my-send {
 		min-width: 1000px;
-		max-height: 100%;
+		max-height: 85vh;
 		background-color: white;
 		height: auto;
 

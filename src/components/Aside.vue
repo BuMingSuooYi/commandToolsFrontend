@@ -10,8 +10,8 @@
 			<span slot="title">发送命令</span>
 		</el-menu-item>
 		<el-menu-item index="3">
-			<i class="el-icon-setting"></i>
-			<span slot="title">待定</span>
+			<i class="el-icon-menu"></i>
+			<span slot="title">发送历史</span>
 		</el-menu-item>
 	</el-menu>
 </template>
@@ -29,8 +29,11 @@
 					case '2':
 						path = '/sendcommand';
 						break;
+					case '3':
+						path = '/sendhistory';
+						break;
 				}
-				console.log(this.$router.currentRoute.fullPath,path,this.$router.currentRoute.fullPath != path)
+				console.log(this.$router.currentRoute.fullPath, path, this.$router.currentRoute.fullPath != path)
 				if (this.$router.currentRoute.fullPath != path) {
 					this.$router.push(path);
 				}

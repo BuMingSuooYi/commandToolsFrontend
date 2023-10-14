@@ -10,10 +10,10 @@ const baseURL = '/command';
  * @returns {AxiosPromise} Axios请求
  */
 export const getAll = () => {
-    return request({
-        url: `${baseURL}`,
-        method: 'GET',
-    });
+	return request({
+		url: `${baseURL}`,
+		method: 'GET',
+	});
 };
 
 /**
@@ -21,10 +21,10 @@ export const getAll = () => {
  * @returns {AxiosPromise} Axios请求
  */
 export const findByName = (name) => {
-    return request({
-        url: baseURL+'/findByName/'+name,
-        method: 'GET',
-    });
+	return request({
+		url: baseURL + '/findByName/' + name,
+		method: 'GET',
+	});
 };
 
 /**
@@ -32,10 +32,10 @@ export const findByName = (name) => {
  * @returns {AxiosPromise} Axios请求
  */
 export const getAllSysParameter = () => {
-    return request({
-        url: `${baseURL}/sysParameter`,
-        method: 'GET',
-    });
+	return request({
+		url: `${baseURL}/sysParameter`,
+		method: 'GET',
+	});
 };
 
 // /**
@@ -55,11 +55,13 @@ export const getAllSysParameter = () => {
  * @returns {AxiosPromise} Axios请求
  */
 export const search = (condition) => {
-    return request({
-        url: `${baseURL}/search`,
-        method: 'POST',
-        data: { ...condition }
-    });
+	return request({
+		url: `${baseURL}/search`,
+		method: 'POST',
+		data: {
+			...condition
+		}
+	});
 };
 
 /**
@@ -68,11 +70,13 @@ export const search = (condition) => {
  * @returns {AxiosPromise} Axios请求
  */
 export const add = (params) => {
-    return request({
-        url: `${baseURL}/createcommand`,
-        method: 'POST',
-        data: { ...params }
-    });
+	return request({
+		url: `${baseURL}/createcommand`,
+		method: 'POST',
+		data: {
+			...params
+		}
+	});
 };
 
 /**
@@ -81,11 +85,13 @@ export const add = (params) => {
  * @returns {AxiosPromise} Axios请求
  */
 export const call = (params) => {
-    return request({
-        url: `${baseURL}/callfunction`,
-        method: 'POST',
-		data: { ...params }
-    });
+	return request({
+		url: `${baseURL}/callfunction`,
+		method: 'POST',
+		data: {
+			...params
+		}
+	});
 };
 
 // /**
@@ -107,11 +113,13 @@ export const call = (params) => {
  * @returns {AxiosPromise} Axios请求
  */
 export const updata = (params) => {
-    return request({
-        url: `${baseURL}`,
-        method: 'Patch',
-        data: { ...params }
-    });
+	return request({
+		url: `${baseURL}`,
+		method: 'Patch',
+		data: {
+			...params
+		}
+	});
 };
 
 
@@ -140,25 +148,39 @@ export const updata = (params) => {
 // };
 
 /**
- * 倒叙查询全部命令历史
+ * 倒叙查询全部命令发送历史
  * @returns {AxiosPromise} Axios请求
  */
 export const findSendingHistory = () => {
-    return request({
-        url: `${baseURL}/sendingHistory`,
-        method: 'GET',
-    });
+	return request({
+		url: `${baseURL}/sendingHistory`,
+		method: 'GET',
+	});
 };
 
 /**
- * 添加命令
+ * 添加命令发送历史
  * @param params Command对象
  * @returns {AxiosPromise} Axios请求
  */
 export const addSendingHistory = (params) => {
-    return request({
-        url: `${baseURL}/addSendingHistory`,
-        method: 'POST',
-        data: { ...params }
-    });
+	return request({
+		url: `${baseURL}/addSendingHistory`,
+		method: 'POST',
+		data: {
+			...params
+		}
+	});
+
 };
+
+/**
+ * 获取命令发送历史题头
+ * @returns {AxiosPromise} Axios请求
+ */
+export const getHistoryTite = () => {
+	return request({
+		url: baseURL+'/getHistoryTite',
+		method: 'GET',
+	});
+}

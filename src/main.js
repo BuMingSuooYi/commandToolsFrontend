@@ -41,7 +41,9 @@ import {
 	//弹出框
 	Popover,
 	//提示信息
-	Tooltip
+	Tooltip,
+	// 卡片
+	Card
 	
 } from 'element-ui';
 
@@ -73,6 +75,7 @@ Vue.use(Autocomplete);
 Vue.use(Tag);
 Vue.use(Popover);
 Vue.use(Tooltip);
+Vue.use(Card);
 
 
 

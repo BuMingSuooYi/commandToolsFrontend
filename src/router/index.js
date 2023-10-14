@@ -1,6 +1,7 @@
 import VueRouter from 'vue-router'
 import Command from '../page/Command'
 import SendCommand from '../page/SendCommand'
+import SendHistory from '../page/SendHistory'
 
 export default new VueRouter({
 	routes:[
@@ -18,6 +19,11 @@ export default new VueRouter({
 			name: 'sendcommand',
 			path:'/sendcommand',
 			component:SendCommand
+		},
+		{
+			name: 'sendhistory',
+			path:'/sendhistory',
+			component:SendHistory
 		},
 	]
 })
