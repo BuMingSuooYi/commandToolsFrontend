@@ -52,6 +52,7 @@
 	import {
 		add,
 		updata,
+		findAlltype
 	} from '../../api/command.js'
 
 	export default {
@@ -137,7 +138,18 @@ editCommand();`,
 				console.log(item);
 			},
 			//获取分类列表
-			querySearch(queryString, cb) {
+			async querySearch(queryString, cb) {
+				
+				await findAlltype().then(res => {
+					this.restaurants = res.map((obj) => {
+					  return {
+					    value: obj.type,
+					  };
+					});
+				}).catch(err => {
+					this.restaurants = [];
+					console.log("类型获取失败：", err)
+				});
 				console.log(queryString, cb, this.restaurants);
 				// 调用 callback 返回建议列表的数据
 				cb(this.restaurants);

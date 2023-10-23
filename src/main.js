@@ -10,6 +10,7 @@ import {
 	//导航栏
 	Menu,
 	MenuItem,
+	Submenu,
 	MenuItemGroup,
 	//表格
 	Table,
@@ -43,7 +44,9 @@ import {
 	//提示信息
 	Tooltip,
 	// 卡片
-	Card
+	Card,
+	// 提示信息
+	Message
 	
 } from 'element-ui';
 
@@ -76,8 +79,12 @@ Vue.use(Tag);
 Vue.use(Popover);
 Vue.use(Tooltip);
 Vue.use(Card);
+Vue.use(Submenu);
 
 
+
+// 提醒信息
+Vue.prototype.$message = Message;
 
 Vue.config.productionTip = true;
 

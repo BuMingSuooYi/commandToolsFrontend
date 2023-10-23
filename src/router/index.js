@@ -2,6 +2,7 @@ import VueRouter from 'vue-router'
 import Command from '../page/Command'
 import SendCommand from '../page/SendCommand'
 import SendHistory from '../page/SendHistory'
+import HistoryTag from '../page/HistoryTag'
 
 export default new VueRouter({
 	routes:[
@@ -24,6 +25,11 @@ export default new VueRouter({
 			name: 'sendhistory',
 			path:'/sendhistory',
 			component:SendHistory
+		},
+		{
+			name: 'historytag',
+			path:'/historytag',
+			component:HistoryTag
 		},
 	]
 })

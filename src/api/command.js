@@ -16,6 +16,18 @@ export const getAll = () => {
 	});
 };
 
+
+/**
+ * 查询命令全部分类
+ * @returns {AxiosPromise} Axios请求
+ */
+export const findAlltype = () => {
+	return request({
+		url: `${baseURL}`+"/findAlltype",
+		method: 'GET',
+	});
+};
+
 /**
  * 查询单个命令
  * @returns {AxiosPromise} Axios请求
@@ -94,18 +106,17 @@ export const call = (params) => {
 	});
 };
 
-// /**
-//  * 根据ID删除账户
-//  * @param id 账户ID
-//  * @returns {AxiosPromise} Axios请求
-//  */
-// export const deleteAccountById = (id) => {
-//     return request({
-//         url: `${baseURL}`,
-//         method: 'DELETE',
-//         params: { id }
-//     });
-// };
+/**
+ * 根据ID删除命令
+ * @param id 命令ID
+ * @returns {AxiosPromise} Axios请求
+ */
+export const deleteCommand = (id) => {
+    return request({
+        url: `${baseURL}`+"/"+id,
+        method: 'DELETE',
+    });
+};
 
 /**
  * 修改命令
@@ -175,6 +186,30 @@ export const addSendingHistory = (params) => {
 };
 
 /**
+ * 查询命令的全部状态列表
+ * @returns {AxiosPromise} Axios请求
+ */
+export const getAllState = () => {
+	return request({
+		url: baseURL+'/getAllState',
+		method: 'GET',
+	});
+}
+
+/**
+ * 查询命令历史的全部标签
+ * @returns {AxiosPromise} Axios请求
+ */
+export const getAllTag = () => {
+	return request({
+		url: baseURL+'/getAllTag',
+		method: 'GET',
+	});
+}
+
+
+
+/**
  * 获取命令发送历史题头
  * @returns {AxiosPromise} Axios请求
  */
@@ -184,3 +219,87 @@ export const getHistoryTite = () => {
 		method: 'GET',
 	});
 }
+
+/**
+ * 获取某命令近n天的发送记录和标签
+ * @returns {AxiosPromise} Axios请求
+ */
+export const getHistoryNearlyNByCommand = (commandId) => {
+	return request({
+		url: baseURL+'/getHistoryNearlyNByCommand/' + commandId,
+		method: 'GET',
+	});
+}
+
+
+/**
+ * 更新历史命令的标签集
+ * * @param params 
+ * @returns {AxiosPromise} Axios请求
+ */
+export const updataSendingHistoryTag = (params) => {
+	return request({
+		url: baseURL+'/updataSendingHistoryTag',
+		method: 'Patch',
+		data: {
+			...params
+		}
+	});
+};
+
+
+// 历史标签部分
+
+/**
+ * 获取全部历史标签
+ * @returns {AxiosPromise} Axios请求
+ */
+export const findAllTag = () => {
+	return request({
+		url: baseURL+'/findAllTag',
+		method: 'GET',
+	});
+}
+
+/**
+ * 添加历史标签
+ * @param params 历史标签对象
+ * @returns {AxiosPromise} Axios请求
+ */
+export const createTag = (params) => {
+	return request({
+		url: `${baseURL}/createTag`,
+		method: 'POST',
+		data: {
+			...params
+		}
+	});
+};
+
+/**
+ * 更新历史标签
+ * * @param params 
+ * @returns {AxiosPromise} Axios请求
+ */
+export const updateTag = (params) => {
+	return request({
+		url: baseURL+'/updateTag',
+		method: 'Patch',
+		data: {
+			...params
+		}
+	});
+};
+
+
+/**
+ * 根据ID删除历史标签
+ * @param id 历史标签ID
+ * @returns {AxiosPromise} Axios请求
+ */
+export const deleteTag = (id) => {
+    return request({
+        url: `${baseURL}`+"/deleteTag/"+id,
+        method: 'DELETE',
+    });
+};

@@ -1,13 +1,13 @@
 <template>
 	<div style="height: 300px;scrollbar-color: transparent transparent;">
-		<el-card class="box-card" v-for="commandTitle in commandTitleList" :key="commandTitle.id">
-			<div slot="header" class="clearfix" @click="unfold(commandTitle.id)">
+		<el-card class="box-card" v-for="commandTitle in commandTitleList" :key="commandTitle.commandId">
+			<div slot="header" class="clearfix" @click="unfold(commandTitle.commandId)">
 				<el-row class="my-item-title">
 					<el-col :span="4">
-						<div class="grid-content ">{{ showCreatTime(commandTitle.creatTime)}}</div>
+						<div class="grid-content ">{{ showDate(commandTitle.creatTime)}}</div>
 					</el-col>
 					<el-col :span="4">
-						<div class="grid-content ">{{commandTitle.name}}</div>
+						<div class="grid-content ">{{commandTitle.name}}-{{commandTitle.commandId}}</div>
 					</el-col>
 					<el-col :span="8">
 						<div class="grid-content">{{commandTitle.par}}</div>
@@ -16,21 +16,27 @@
 				</el-row>
 				<!-- <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button> -->
 			</div>
-			<div v-if="unfoldNum==commandTitle.id" style="margin-bottom: 0px;padding: 0px 50px 0px  50px;">
-				<el-table ref="filterTable" :data="tableData" style="width: 100%">
-					<el-table-column prop="date" label="时间" width="180"></el-table-column>
-					<el-table-column prop="date" label="网络号" width="180"></el-table-column>
-					<el-table-column prop="name" label="参数" width="180"></el-table-column>
-					<el-table-column prop="date" label="状态" width="180"></el-table-column>
-					<el-table-column prop="tag" label="标签" width="250"
-						:filters="[{ text: '家', value: '家' }, { text: '公司', value: '公司' }]" :filter-method="filterTag"
-						filter-placement="bottom-end">
+			<div v-if="unfoldNum==commandTitle.commandId" style="margin-bottom: 0px;padding: 0px 50px 0px  50px;">
+				<el-table ref="filterTable" :data="commandData" style="width: 100%">
+					<el-table-column prop="showTime" label="时间" width="180"></el-table-column>
+					<el-table-column prop="netNum" label="网络号" width="180"></el-table-column>
+					<el-table-column prop="par" label="参数" width="180"></el-table-column>
+					<el-table-column prop="state" label="状态" width="100" :filters="stateList"
+						:filter-method="filterstate" filter-placement="bottom-end">
+						<template slot-scope="scope">
+							<el-tag :type="'success'" disable-transitions>{{scope.row.state}}</el-tag>
+						</template>
+					</el-table-column>
+					<el-table-column prop="tagValues" label="标签" width="250" :filters="tagList"
+						:filter-method="filterTag" filter-placement="bottom-end">
 						<template slot-scope="scope">
 							<!-- <el-tag :type="scope.row.tag === '家' ? 'primary' : 'success'" disable-transitions>
 								{{scope.row.tag}}
 							</el-tag> -->
-							<el-select v-model="value1" multiple placeholder="请选择">
-								<el-option v-for="item in options" :key="item.value" :label="item.label"
+							<!-- <el-select v-model="commandData[scope.$index].tagValues" multiple placeholder="请选择" @change="tagChange(scope.$index)">-->
+							<el-select v-model="scope.row.tagValues" multiple placeholder="请选择"
+								@change="tagChange(scope.row.id,scope.row.tagValues)" >
+								<el-option v-for="item in tagList" :key="item.value" :label="item.text"
 									:value="item.value">
 								</el-option>
 							</el-select>
@@ -43,90 +49,85 @@
 </template>
 <script>
 	import {
+		getAllState,
+		getAllTag,
 		getHistoryTite,
 		findSendingHistory,
-		getAllSysParameter
+		getAllSysParameter,
+		getHistoryNearlyNByCommand,
+		updataSendingHistoryTag
 	} from '../api/command.js'
 
 	import {
 		extractDate,
-		extractTime
+		extractDateOrTime,
+		extractTime,
 	} from '../unit/mydate.js'
 
 	export default {
 		async created() {
-			console.log("开始")
-			// 数据请求
+			// 数据请求-命令题头
 			await getHistoryTite().then(res => {
 				this.commandTitleList = res;
-				console.log("123", this.commandTitleList);
+				console.log("命令题头：", this.commandTitleList);
 			}).catch(err => {
 				console.log("出错了：", err)
 			})
-
-			console.log(extractDate(this.commandTitleList[0].creatTime));
-			console.log(extractTime(this.commandTitleList[0].creatTime));
-
+			// 数据请求-命令状态列表
+			getAllState().then(res => {
+				this.stateList = res;
+				console.log("状态列表：", this.stateList);
+			}).catch(err => {
+				console.log("出错了：", err)
+			})
+			// 数据请求-命令历史状态列表
+			getAllTag().then(res => {
+				this.tagList = res;
+				console.log("标签列表：", this.tagList);
+			}).catch(err => {
+				console.log("出错了：", err)
+			})
 		},
 		data() {
 			return {
 				// 展开题头id
-				unfoldNum: 2,
+				unfoldNum: -1,
 				// 历史题头列表
 				commandTitleList: [],
-				tableData: [{
-					date: '2016-05-02',
-					name: '王小虎',
-					address: '上海市普陀区金沙江路 1518 弄',
-					tag: '家'
-				}, {
-					date: '2016-05-04',
-					name: '王小虎',
-					address: '上海市普陀区金沙江路 1517 弄',
-					tag: '公司'
-				}, {
-					date: '2016-05-01',
-					name: '王小虎',
-					address: '上海市普陀区金沙江路 1519 弄',
-					tag: '家'
-				}, {
-					date: '2016-05-03',
-					name: '王小虎',
-					address: '上海市普陀区金沙江路 1516 弄',
-					tag: '公司'
-				}],
+				// 状态列表
+				stateList: [],
+				// 展开的命令历史
+				commandData: [],
 				// 标签
-				options: [{
-					value: '选项1',
-					label: '黄金糕'
-				}, {
-					value: '选项2',
-					label: '双皮奶'
-				}, {
-					value: '选项3',
-					label: '蚵仔煎'
-				}, {
-					value: '选项4',
-					label: '龙须面'
-				}, {
-					value: '选项5',
-					label: '北京烤鸭'
-				}],
-				value1: ['选项3', '选项5'],
+				tagList: [],
+				value1: [1, 3],
 			}
 		},
 		computed: {
-			showCreatTime() {
+			showDate() {
 				return function(time) {
-					console.log(";;;", time)
 					return extractDate(time);
 				};
-			}
+			},
 		},
 		methods: {
 			// 展开函数
-			async unfold(id) {
-				this.unfoldNum = id;
+			async unfold(commandId) {
+				if(commandId==this.unfoldNum){
+					this.unfoldNum = -1;
+					return;
+				}
+				this.unfoldNum = commandId;
+				await getHistoryNearlyNByCommand(commandId).then(res => {
+					this.commandData = res;
+					this.commandData.forEach(obj => {
+						obj["showTime"] = extractDateOrTime(obj.creatTime);
+					});
+					console.log("完整：", this.commandData);
+				}).catch(err => {
+					console.log("出错了：", err);
+				})
+
 			},
 			// 表格函数
 			clearFilter() {
@@ -135,8 +136,25 @@
 			formatter(row, column) {
 				return row.address;
 			},
+			filterstate(value, row) {
+				console.log("filterstate:", value, row)
+				return row.state === value;
+			},
 			filterTag(value, row) {
-				return row.tag === value;
+				console.log(row.id, value, row.tagValues, row.tagValues.includes(value));
+				return row.tagValues.includes(value)
+			},
+			 tagChange(id,tagValues) {
+				let params={
+					historyid:id,
+					newtagValues:tagValues
+				}
+				updataSendingHistoryTag(params).then(res => {
+					console.log("标签发送变化,",res);
+				}).catch(err => {
+					console.log("出错了：", err);
+				})
+
 			},
 			filterHandler(value, row, column) {
 				const property = column['property'];

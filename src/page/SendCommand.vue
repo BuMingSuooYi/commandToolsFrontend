@@ -29,7 +29,7 @@
 								<InputGrid :inputConfig="analysisPar.parList" @resultData="resultInputData"></InputGrid>
 							</div>
 						</el-col>
-						<el-col :span="8" v-if="sendPar.sysList">
+						<el-col :span="8" v-if="analysisPar.sysList">
 							<div class="grid-content">
 								<div v-for="(key, value) in analysisPar.sysList" class="show-sys">
 									{{ key }} ：{{ value }}
@@ -47,7 +47,7 @@
 		</el-row>
 
 		<div>
-			<el-dialog width="80%" title="预览命令" :visible.sync="dialogTableVisible" >
+			<el-dialog width="80%" title="预览命令" :visible.sync="dialogTableVisible">
 				<el-row>
 					<el-col :span="12">
 						<pre class="my_request">
@@ -185,13 +185,13 @@
 					sysList: {}
 				},
 				// 发送命令时携带的
-				par:{},
+				par: {},
 				// 预览命令弹窗
 				dialogTableVisible: false,
 				// 运行命令得到的参数
 				commandPar: [],
 				// js代码错误标志!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				jsF:true,
+				jsF: true,
 				// 发送命令之后的结果
 				requestResult: {},
 				//发送命令时需要的请求头
@@ -204,9 +204,14 @@
 		watch: {
 			commandId(newvalue) {
 				// 重新选择命令后初始化
-				this.command = this.searchCommandList.find(obj => obj.id === newvalue);
-				this.analysisPar.parList = JSON.parse(this.command.parameter)
-				this.analysisPar.sysList = this.command.sysParameter.split(',')
+				const command = this.searchCommandList.find(obj => obj.id === newvalue);
+				this.analysisPar.parList = JSON.parse(command.parameter)
+				console.log("注意这里的command.sysParameter：", command.sysParameter)
+				if (command.sysParameter == '') {
+					this.analysisPar.sysList = undefined
+				} else {
+					this.analysisPar.sysList = command.sysParameter.split(',')
+				}
 				this.sendPar = {
 					parList: {},
 					sysList: {}
@@ -228,7 +233,7 @@
 				this.loading = true;
 				setTimeout(() => {
 					this.loading = false;
-					console.log("调用",query)
+					console.log("调用", query)
 					findByName(query).then(res => {
 						this.searchCommandList = res;
 					}).catch(err => {
@@ -248,29 +253,32 @@
 			},
 			// 系统参数解析的函数
 			analysisSysPar() {
-				this.analysisPar.sysList.forEach((sys) => {
-					let value;
-					switch (sys) {
-						case 'sysTime':
-							value = new Date().toLocaleString();
-							break;
-						case 'netNum':
-							value = this.selectNet;
-							break;
-						case 'nodeNum':
-							value = this.selectNode;
-							break;
-						case 'appNum':
-							value = this.selectApp;
-							break;
-					}
-					this.sendPar.sysList[sys] = value;
-				});
+				if (this.analysisPar.sysList) {
+					this.analysisPar.sysList.forEach((sys) => {
+						let value;
+						switch (sys) {
+							case 'sysTime':
+								value = new Date().toLocaleString();
+								break;
+							case 'netNum':
+								value = this.selectNet;
+								break;
+							case 'nodeNum':
+								value = this.selectNode;
+								break;
+							case 'appNum':
+								value = this.selectApp;
+								break;
+						}
+						this.sendPar.sysList[sys] = value;
+					});
+				}
+
 			},
 			//预览命令参数
 			async callCommand() {
-				this.jsF=true;
-				this.par={}
+				this.jsF = true;
+				this.par = {}
 				this.requestResult = {};
 				this.dialogTableVisible = true;
 
@@ -292,13 +300,13 @@
 					id: this.commandId,
 					prm: prm
 				};
-				this.par=prm;
+				this.par = prm;
 				await call(test).then(res => {
 					this.commandPar = res;
 				}).catch(err => {
-					this.jsF=false;
-					this.commandPar=['命令代码有误，请先debug'];
-					console.log("jsF：",this.jsF);
+					this.jsF = false;
+					this.commandPar = ['命令代码有误，请先debug'];
+					console.log("jsF：", this.jsF);
 					this.$message.error('请求出错了：' + err);
 				});
 
@@ -327,8 +335,10 @@
 				const command = this.searchCommandList.find(obj => obj.id === this.commandId);
 				let history = {
 					commandId: command.id,
+					commandName: command.name,
+					netNum: 0,
 					state: -1,
-					par:''
+					par: ''
 				}
 				//发送命令
 				await axios.post(url, this.body, {
@@ -338,7 +348,7 @@
 						this.requestResult = response;
 						console.log('成功:', response.data);
 						history.state = response.status;
-						history.par=JSON.stringify(this.par);
+						history.par = JSON.stringify(this.par);
 					})
 					.catch((error) => {
 						this.requestResult = error;
@@ -368,11 +378,13 @@
 					});
 
 				// 添加一条命令历史
-				console.log("history:",history)
+				console.log("history:", history)
+				history.netNum = this.selectNet;
 				addSendingHistory(history).then(res => {
 					console.log("添加命令历史：", res)
 				}).catch(err => {
 					// this.$message.error('请求出错了：' + err);
+					console.log("添加历史错误：", res)
 				});
 			},
 

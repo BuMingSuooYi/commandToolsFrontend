@@ -9,10 +9,17 @@
 			<i class="el-icon-menu"></i>
 			<span slot="title">发送命令</span>
 		</el-menu-item>
-		<el-menu-item index="3">
-			<i class="el-icon-menu"></i>
-			<span slot="title">发送历史</span>
-		</el-menu-item>
+		<el-submenu index="3">
+			<template slot="title">
+				<i class="el-icon-menu"></i>
+		 	<span>历史记录</span>
+			</template>
+			<el-menu-item-group>
+				<el-menu-item index="3-1">发送历史</el-menu-item>
+				<el-menu-item index="3-2">标签管理</el-menu-item>
+			</el-menu-item-group>
+		</el-submenu>
+
 	</el-menu>
 </template>
 
@@ -29,8 +36,11 @@
 					case '2':
 						path = '/sendcommand';
 						break;
-					case '3':
+					case '3-1':
 						path = '/sendhistory';
+						break;
+					case '3-2':
+						path = '/historytag';
 						break;
 				}
 				console.log(this.$router.currentRoute.fullPath, path, this.$router.currentRoute.fullPath != path)

@@ -9,6 +9,31 @@ export function extractDate(timeString) {
   return extractedDate;
 }
 
+// 导出的日期或者时间提取函数
+export function extractDateOrTime(timeString){
+	const inputDate = new Date(timeString);
+	  const currentDate = new Date();
+	
+	  if (
+	    inputDate.getDate() === currentDate.getDate() &&
+	    inputDate.getMonth() === currentDate.getMonth() &&
+	    inputDate.getFullYear() === currentDate.getFullYear()
+	  ) {
+	    // 日期是今天，输出时间
+	    const hours = inputDate.getHours().toString().padStart(2, '0');
+	    const minutes = inputDate.getMinutes().toString().padStart(2, '0');
+	    const time = `${hours}:${minutes}`;
+	    return time;
+	  } else {
+	    // 日期不是今天，输出年月日
+	    const year = inputDate.getFullYear();
+	    const month = (inputDate.getMonth() + 1).toString().padStart(2, '0');
+	    const day = inputDate.getDate().toString().padStart(2, '0');
+	    const date = `${year}-${month}-${day}`;
+	    return date;
+	  }
+}
+
 // 导出的日期和时间提取函数
 export function extractTime(timeString) {
   const dateObject = new Date(timeString);
