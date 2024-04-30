@@ -120,18 +120,21 @@ editCommand();`,
 				if (this.form.id == undefined) {
 					add(this.form).then(res => {
 						this.$store.commit('changeAddF', false);
+						this.$emit("confirmAddorEdit");
 					}).catch(err => {
 						// this.$message.error('请求出错了：' + err);
 					});
 				} else {
 					updata(this.form).then(res => {
 						this.$store.commit('changeEditF', false);
+						this.$emit("confirmAddorEdit");
 					}).catch(err => {
 						// this.$message.error('请求出错了：' + err);
 					});
 				}
-				this.$emit("close")
 				console.log('submit!',this.form);
+				this.$emit("close");
+				
 			},
 			//分类选择
 			handleSelect(item) {

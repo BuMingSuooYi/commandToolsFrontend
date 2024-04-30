@@ -1,0 +1,57 @@
+{
+	/* -----------------------获取系统参数的两种模式 ------------------*/
+	
+	// api模式,从远程获取
+	"sysapi":true,
+	// api
+	
+	// api返回参数的格式
+	"apiPar":[
+		
+	],
+
+	// 系统参数的格式
+	"sysPar":{
+		"netId":
+	},
+	
+	
+	/* --------------------发送命令时携带的数据,预览命令时呈现的数据结构 ----------------- */
+	"ParsCommands": {
+		"header": {
+			"payloadType": "HfReadWriteRequest",
+			"payloadVersion": 1,
+			"subscribe": false,
+			"netId": "??-netId-??" // ?系统变量,node的netId
+		},
+		"payload": {
+			"nodeId": "??-nodeId-??", // ?系统变量,node的nodeId
+			"srcEndpoint": 8, //固定为8
+			"shortAddr": "??-shortAddr-??", //?系统变量,node的shortAddr 
+			"addrType": 2, //固定值
+
+			"dstEndpoint": "??-dstEndpoint-??",// ?系统变量,用户选择的endpoint,
+			"clusterId": 17, //固定值
+			"cmd": 2, //固定值
+			"spe": 0, //固定值
+			"dir": 0, //固定值
+			"disrsp": 0, //固定值
+			"mcd": 0, //固定值
+			"seq": 0 //固定值
+		},
+		"extraPayload": {
+			"attributeId": 4, //固定值
+			"attributeType": 67, //固定值
+			"attributeValue":"!!-result-!!"// 命令解析结果,一维data数组
+		}
+	}
+	
+	
+	
+	
+
+	// 发送命令的api
+
+
+	
+}

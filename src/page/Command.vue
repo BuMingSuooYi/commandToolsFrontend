@@ -51,7 +51,7 @@
 		</div>
 		<!-- 弹出框 -->
 		<el-dialog title="新增命令" :visible="addF" width="40%" center :before-close="closeAdd">
-			<AddCommandDialog :sysList="sysList" @close="closeAdd"></AddCommandDialog>
+			<AddCommandDialog :sysList="sysList" @close="closeAdd" @confirmAddorEdit="confirmAddorEdit"></AddCommandDialog>
 			<!-- <span slot="footer">
 				<el-button type="primary" @click="">确认添加</el-button>
 			</span> -->
@@ -96,9 +96,10 @@
 		},
 		created() {
 			this.searchCommand();
+			// 获取分类列表
 			findAlltype().then(res => {
 				this.searchTypeList = res;
-				console.log("this.searchTypeList：", this.searchTypeList)
+				console.log("this.searchTypeList：",res)
 			}).catch(err => {
 				this.searchTypeList = [];
 				console.log("类型获取失败：", err)
@@ -108,9 +109,7 @@
 				this.sysList = res;
 				console.log("syslist：", this.sysList)
 			})
-
-			// 获取分类列表
-
+			
 		},
 		data() {
 			return {
@@ -169,10 +168,15 @@
 			ConfirmDelet() {
 				deleteCommand(this.deleteObj.id).then(res => {
 					console.log("删除成功")
+					this.searchCommand();
 				}).catch(err => {
 					// this.$message.error('请求出错了：' + err);
 				});
 				this.closeDelete();
+			},
+			confirmAddorEdit(){
+				console.log("触发刷新");
+				this.searchCommand();
 			},
 			// 清空模糊搜索条件
 			emptySearch() {
@@ -188,8 +192,8 @@
 					type: this.searchType,
 					upTime: this.searchDate == null ? '' : this.searchDate
 				}
-				console.log("条件：", condition)
 				await search(condition).then(res => {
+					console.log("搜索")
 					this.formatTableData(res);
 				}).catch(err => {
 					// this.$message.error('请求出错了：' + err);
@@ -220,7 +224,7 @@
 					};
 				});
 				this.tableData = formattedResults;
-				console.log("asuhv:", this.tableData);
+				console.log("命令列表:", this.tableData);
 			},
 
 		},

@@ -117,7 +117,6 @@
 					this.unfoldNum = -1;
 					return;
 				}
-				this.unfoldNum = commandId;
 				await getHistoryNearlyNByCommand(commandId).then(res => {
 					this.commandData = res;
 					this.commandData.forEach(obj => {
@@ -127,7 +126,8 @@
 				}).catch(err => {
 					console.log("出错了：", err);
 				})
-
+				
+				this.unfoldNum = commandId;
 			},
 			// 表格函数
 			clearFilter() {

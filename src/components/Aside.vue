@@ -19,7 +19,10 @@
 				<el-menu-item index="3-2">标签管理</el-menu-item>
 			</el-menu-item-group>
 		</el-submenu>
-
+		<el-menu-item index="4">
+			<i class="el-icon-menu"></i>
+			<span slot="title">数据统计</span>
+		</el-menu-item>
 	</el-menu>
 </template>
 
@@ -41,6 +44,9 @@
 						break;
 					case '3-2':
 						path = '/historytag';
+						break;
+					case '4':
+						path = '/statistics';
 						break;
 				}
 				console.log(this.$router.currentRoute.fullPath, path, this.$router.currentRoute.fullPath != path)

@@ -231,11 +231,12 @@
 			remoteMethod(query) {
 				// if (query !== '') {
 				this.loading = true;
-				setTimeout(() => {
+				setTimeout(async () => {
 					this.loading = false;
 					console.log("调用", query)
-					findByName(query).then(res => {
+					await findByName(query).then(res => {
 						this.searchCommandList = res;
+						console.log("this.searchCommandList:",this.searchCommandList)
 					}).catch(err => {
 						console.log("出错了：", err)
 						this.searchCommandList = [];

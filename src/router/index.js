@@ -3,6 +3,8 @@ import Command from '../page/Command'
 import SendCommand from '../page/SendCommand'
 import SendHistory from '../page/SendHistory'
 import HistoryTag from '../page/HistoryTag'
+import Statistics from '../page/Statistics'
+
 
 export default new VueRouter({
 	routes:[
@@ -30,6 +32,11 @@ export default new VueRouter({
 			name: 'historytag',
 			path:'/historytag',
 			component:HistoryTag
+		},
+		{
+			name: 'statistics',
+			path:'/statistics',
+			component:Statistics
 		},
 	]
 })
